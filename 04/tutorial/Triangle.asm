@@ -3,7 +3,7 @@
     @i    
     M=1      // i=1
     @R1
-    M=0      / sum=0
+    M=0      // sum=0
 (LOOP)
     @i
     D=M      // D=i
@@ -15,7 +15,9 @@
     D=M      // D=i
     @R1
     M=D+M    // sum=sum+i
-    @Loop
+    @i
+    M=M+1    // increment i
+    @LOOP
     0;JMP
 (END)
     @END
