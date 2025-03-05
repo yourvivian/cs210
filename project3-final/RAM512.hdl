@@ -1,0 +1,40 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/3/b/RAM512.hdl
+/**
+ * Memory of 512 16-bit registers.
+ * If load is asserted, the value of the register selected by
+ * address is set to in; Otherwise, the value does not change.
+ * The value of the selected register is emitted by out.
+ */
+CHIP RAM512 {
+    IN in[16], load, address[9];
+    OUT out[16];
+
+    PARTS:
+    // DMux8Way is used to route the 'load' signal to one of eight 64-bit RAM chips.
+    // It takes the lower 3 bits of the 9-bit address as the selector (address[0..2]),
+    // ensuring only one RAM64 chip receives the load signal at any time.
+    // This reduces the need for an individual load signal per RAM64 chip.
+    DMux8Way(in=load, sel=address[0..2], a=a, b=b, c=c, d=d, e=e, f=f, g=g, h=h);
+
+    // Each RAM64 chip is responsible for 64 of the 512 registers (i.e., 8 chips).
+    // The address[3..8] slice is used to select a register within each RAM64, 
+    // which reduces the complexity of address decoding by allowing all RAM64 chips 
+    // to share the same address bits for the higher-order bits (address[3..8]).
+    RAM64(in=in, load=a, address=address[3..8], out=oa);
+    RAM64(in=in, load=b, address=address[3..8], out=ob);
+    RAM64(in=in, load=c, address=address[3..8], out=oc);
+    RAM64(in=in, load=d, address=address[3..8], out=od);
+    RAM64(in=in, load=e, address=address[3..8], out=oe);
+    RAM64(in=in, load=f, address=address[3..8], out=of);
+    RAM64(in=in, load=g, address=address[3..8], out=og);
+    RAM64(in=in, load=h, address=address[3..8], out=oh);
+
+    // Mux8Way16 selects the output from one of the eight RAM64 chips based on the lower 3 bits of the address (address[0..2]).
+    // This enables the correct 16-bit value to be emitted from the selected register in the appropriate RAM64.
+    // The Mux8Way16 ensures that only one of the RAM64 outputs is forwarded to the 'out' signal at a time.
+    // This allows for an efficient 8-way multiplexing with minimal hardware usage.
+    Mux8Way16(a=oa, b=ob, c=oc, d=od, e=oe, f=of, g=og, h=oh, sel=address[0..2], out=out);
+}

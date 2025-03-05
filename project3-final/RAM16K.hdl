@@ -1,0 +1,29 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/3/b/RAM16K.hdl
+/**
+ * Memory of 16K 16-bit registers.
+ * If load is asserted, the value of the register selected by
+ * address is set to in; Otherwise, the value does not change.
+ * The value of the selected register is emitted by out.
+ */
+CHIP RAM16K {
+    IN in[16], load, address[14];
+    OUT out[16];
+
+    PARTS:
+    // DMux4Way splits the load signal among 4 RAM4K chips based on address[0..1],
+    // ensuring only one chip is written to at a time, reducing power consumption.
+    DMux4Way(in=load, sel=address[0..1], a=a, b=b, c=c, d=d);
+
+    // Each RAM4K stores 4,096 registers and shares address[2..13], reducing address decoding overhead.
+    RAM4K(in=in, load=a, address=address[2..13], out=oa);
+    RAM4K(in=in, load=b, address=address[2..13], out=ob);
+    RAM4K(in=in, load=c, address=address[2..13], out=oc);
+    RAM4K(in=in, load=d, address=address[2..13], out=od);
+
+    // Mux4Way16 selects the correct output from the 4 RAM4K modules based on address[0..1],
+    // reducing active circuit at any time and optimizing energy efficiency.
+    Mux4Way16(a=oa, b=ob, c=oc, d=od, sel=address[0..1], out=out);
+}
